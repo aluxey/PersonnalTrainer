@@ -1,0 +1,19 @@
+{
+  "date": "2026-04-29",
+  "source": "health_connect",
+  "metrics": [
+    { "metric": "steps", "value": 9200, "unit": "count" },
+    { "metric": "sleep_duration_min", "value": 452, "unit": "min" },
+    { "metric": "sleep_deep_min", "value": 82, "unit": "min" },
+    { "metric": "sleep_rem_min", "value": 93, "unit": "min" },
+    { "metric": "active_energy_kcal", "value": 480, "unit": "kcal" },
+    { "metric": "workout_duration_min", "value": 35, "unit": "min" },
+    { "metric": "weight_kg", "value": 90.8, "unit": "kg" },
+    { "metric": "calories_intake_kcal", "value": 2080, "unit": "kcal" },
+    { "metric": "protein_g", "value": 154, "unit": "g" },
+    { "metric": "carbs_g", "value": 190, "unit": "g" },
+    { "metric": "fat_g", "value": 72, "unit": "g" },
+    { "metric": "fiber_g", "value": 31, "unit": "g" },
+    { "metric": "water_ml", "value": 2600, "unit": "ml" }
+  ]
+}

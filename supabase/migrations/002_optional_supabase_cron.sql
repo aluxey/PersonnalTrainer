@@ -1,0 +1,31 @@
+-- Optional: use this only if you deploy the backend behind a public URL and
+-- want Supabase Cron to invoke it instead of running node-cron in the backend.
+--
+-- Replace the URL and API key before executing.
+--
+-- create extension if not exists pg_cron;
+-- create extension if not exists pg_net;
+--
+-- select cron.schedule(
+--   'personal-trainer-daily-summary',
+--   '20 8 * * *',
+--   $$
+--   select net.http_post(
+--     url := 'https://YOUR_BACKEND_URL/api/jobs/daily-summary',
+--     headers := '{"content-type":"application/json","x-api-key":"YOUR_INGEST_API_KEY"}'::jsonb,
+--     body := '{}'::jsonb
+--   );
+--   $$
+-- );
+--
+-- select cron.schedule(
+--   'personal-trainer-weekly-report',
+--   '0 9 * * 0',
+--   $$
+--   select net.http_post(
+--     url := 'https://YOUR_BACKEND_URL/api/jobs/weekly-report',
+--     headers := '{"content-type":"application/json","x-api-key":"YOUR_INGEST_API_KEY"}'::jsonb,
+--     body := '{}'::jsonb
+--   );
+--   $$
+-- );
