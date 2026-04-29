@@ -1,0 +1,16 @@
+{
+  "name": "personal-trainer-workflow",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "workspaces": [
+    "backend",
+    "dashboard"
+  ],
+  "scripts": {
+    "dev": "npm run dev --workspace backend",
+    "dev:backend": "npm run dev --workspace backend",
+    "dev:dashboard": "npm run dev --workspace dashboard",
+    "check": "npm run check --workspace backend && npm run check --workspace dashboard"
+  }
+}

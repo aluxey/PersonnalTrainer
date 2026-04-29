@@ -1,0 +1,19 @@
+{
+  "name": "@personal-trainer/backend",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "src/server.js",
+  "scripts": {
+    "dev": "node --watch src/server.js",
+    "start": "node src/server.js",
+    "check": "node --check src/server.js && node --check src/lib/config.js && node --check src/lib/supabase.js && node --check src/lib/http.js && node --check src/services/metrics.js && node --check src/services/reports.js && node --check src/routes/ingest.js && node --check src/routes/jobs.js && node --check src/jobs/scheduler.js"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.45.4",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.18.3",
+    "node-cron": "^3.0.3"
+  }
+}
