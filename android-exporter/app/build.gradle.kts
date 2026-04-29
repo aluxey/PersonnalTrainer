@@ -5,7 +5,7 @@ plugins {
 
 android {
     namespace = "com.personaltrainer.exporter"
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.personaltrainer.exporter"
