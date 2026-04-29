@@ -1,0 +1,4 @@
+date,source,steps,sleep_minutes,deep_sleep_min,rem_sleep_min,sleep_score,active_calories,exercise_minutes,weight_kg,calories,protein_g,carbs_g,fat_g,fiber_g,water_ml
+2026-04-27,zepp,8421,421,72,88,78,390,35,91.2,2180,142,210,74,26,2200
+2026-04-28,zepp,10432,463,84,96,84,510,48,90.9,2040,155,185,68,31,2600
+2026-04-29,zepp,7604,398,61,75,70,335,20,90.8,2325,129,245,82,22,1900

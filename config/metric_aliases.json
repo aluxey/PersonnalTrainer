@@ -1,0 +1,78 @@
+{
+  "steps": {
+    "unit": "count",
+    "aliases": ["steps", "step_count", "pas", "total_steps", "active_steps"]
+  },
+  "distance_m": {
+    "unit": "m",
+    "aliases": ["distance_m", "distance", "walked_distance_meters", "walking_running_distance"]
+  },
+  "sleep_duration_min": {
+    "unit": "min",
+    "aliases": ["sleep_duration_min", "sleep_minutes", "total_sleep_min", "total_sleep", "sleep_total", "asleep_minutes"]
+  },
+  "sleep_deep_min": {
+    "unit": "min",
+    "aliases": ["sleep_deep_min", "deep_sleep_min", "deep_sleep", "deep_minutes"]
+  },
+  "sleep_rem_min": {
+    "unit": "min",
+    "aliases": ["sleep_rem_min", "rem_sleep_min", "rem_sleep", "rem_minutes"]
+  },
+  "sleep_awake_min": {
+    "unit": "min",
+    "aliases": ["sleep_awake_min", "awake_min", "awake_minutes", "wake_after_sleep_onset"]
+  },
+  "sleep_score": {
+    "unit": "score",
+    "aliases": ["sleep_score", "score_sommeil"]
+  },
+  "active_energy_kcal": {
+    "unit": "kcal",
+    "aliases": ["active_energy_kcal", "active_calories", "calories_active", "active_energy", "move_calories"]
+  },
+  "workout_duration_min": {
+    "unit": "min",
+    "aliases": ["workout_duration_min", "exercise_minutes", "training_minutes", "duration_min", "sport_duration_min"]
+  },
+  "workout_energy_kcal": {
+    "unit": "kcal",
+    "aliases": ["workout_energy_kcal", "workout_calories", "exercise_calories", "sport_calories"]
+  },
+  "heart_rate_resting_bpm": {
+    "unit": "bpm",
+    "aliases": ["heart_rate_resting_bpm", "resting_heart_rate", "rhr", "resting_hr"]
+  },
+  "weight_kg": {
+    "unit": "kg",
+    "aliases": ["weight_kg", "weight", "poids", "body_weight"]
+  },
+  "body_fat_pct": {
+    "unit": "%",
+    "aliases": ["body_fat_pct", "body_fat", "fat_percentage", "masse_grasse_pct"]
+  },
+  "calories_intake_kcal": {
+    "unit": "kcal",
+    "aliases": ["calories_intake_kcal", "calories_in", "food_calories", "nutrition_calories", "energy_consumed", "calories"]
+  },
+  "protein_g": {
+    "unit": "g",
+    "aliases": ["protein_g", "proteins", "protein", "proteines"]
+  },
+  "carbs_g": {
+    "unit": "g",
+    "aliases": ["carbs_g", "carbohydrates", "carbs", "glucides"]
+  },
+  "fat_g": {
+    "unit": "g",
+    "aliases": ["fat_g", "lipids", "fat", "lipides"]
+  },
+  "fiber_g": {
+    "unit": "g",
+    "aliases": ["fiber_g", "fibre_g", "fiber", "fibres"]
+  },
+  "water_ml": {
+    "unit": "ml",
+    "aliases": ["water_ml", "water", "hydration_ml", "eau_ml"]
+  }
+}

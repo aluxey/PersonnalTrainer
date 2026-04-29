@@ -1,0 +1,19 @@
+{
+  "timezone": "Europe/Paris",
+  "weight_loss": {
+    "target_weekly_loss_kg": 0.5,
+    "daily_calorie_target_kcal": 2100,
+    "protein_target_g": 150,
+    "fiber_target_g": 30,
+    "water_target_ml": 2500
+  },
+  "activity": {
+    "steps_target": 9000,
+    "active_energy_target_kcal": 450,
+    "workout_duration_target_min": 30
+  },
+  "recovery": {
+    "sleep_target_min": 450,
+    "sleep_warning_min": 390
+  }
+}
