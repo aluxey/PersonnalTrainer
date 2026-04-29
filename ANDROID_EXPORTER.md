@@ -71,6 +71,8 @@ Les donnees nutrition seront presentes uniquement si une app nutrition ecrit dan
 9. Appuyer sur `Synchroniser hier maintenant`.
 10. Verifier Supabase et le dashboard.
 
+Si Android Studio ne fonctionne pas sur ta machine, utilise les alternatives de [ANDROID_ALTERNATIVES.md](ANDROID_ALTERNATIVES.md), notamment le build APK via GitHub Actions.
+
 Important : ouvrir le dossier `android-exporter/`, pas la racine `PersonnalTrainer/`. La racine contient aussi le backend Node.js et le dashboard React ; Android Studio doit charger uniquement le projet Gradle Android.
 
 Si Android Studio refuse d'ouvrir le projet :

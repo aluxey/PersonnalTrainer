@@ -21,6 +21,7 @@ Ce fichier est l'index racine du projet.
 - [BACKEND.md](BACKEND.md) : API Node.js, routes, jobs, configuration.
 - [DASHBOARD.md](DASHBOARD.md) : React/Vite, composants, donnees affichees.
 - [ANDROID_EXPORTER.md](ANDROID_EXPORTER.md) : app Android Health Connect.
+- [ANDROID_ALTERNATIVES.md](ANDROID_ALTERNATIVES.md) : installer l'app sans Android Studio.
 - [OPERATIONS.md](OPERATIONS.md) : commandes, debug et routine.
 - [ROADMAP.md](ROADMAP.md) : prochaines etapes.
 - [todo.md](todo.md) : checklist operationnelle.

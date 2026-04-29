@@ -1,0 +1,39 @@
+name: Build Android Exporter APK
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - "android-exporter/**"
+      - ".github/workflows/android-exporter-apk.yml"
+
+jobs:
+  build-debug-apk:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Make Gradle executable
+        run: chmod +x ./gradlew
+        working-directory: android-exporter
+
+      - name: Build debug APK
+        run: ./gradlew :app:assembleDebug --stacktrace
+        working-directory: android-exporter
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: personal-trainer-exporter-debug-apk
+          path: android-exporter/app/build/outputs/apk/debug/app-debug.apk
