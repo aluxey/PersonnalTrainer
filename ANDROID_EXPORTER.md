@@ -71,6 +71,17 @@ Les donnees nutrition seront presentes uniquement si une app nutrition ecrit dan
 9. Appuyer sur `Synchroniser hier maintenant`.
 10. Verifier Supabase et le dashboard.
 
+Important : ouvrir le dossier `android-exporter/`, pas la racine `PersonnalTrainer/`. La racine contient aussi le backend Node.js et le dashboard React ; Android Studio doit charger uniquement le projet Gradle Android.
+
+Si Android Studio refuse d'ouvrir le projet :
+
+1. Utiliser `File > Open`.
+2. Selectionner `/home/aluxey/Workspace/PersonnalTrainer/android-exporter`.
+3. Verifier que `settings.gradle.kts` est visible dans la fenetre de selection.
+4. Attendre la synchronisation Gradle.
+5. Si une erreur parle de `dl.google.com`, `repo.maven.apache.org` ou `Temporary failure in name resolution`, c'est un probleme reseau/proxy/DNS, pas un probleme de structure du projet.
+6. Dans Android Studio, verifier `Settings > Build, Execution, Deployment > Gradle` et utiliser le Gradle wrapper du projet.
+
 ## URL backend
 
 Emulateur Android :

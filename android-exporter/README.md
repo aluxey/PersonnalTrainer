@@ -41,6 +41,8 @@ L'app tente d'exporter ces metriques quand les permissions et les donnees existe
 
 Ouvre le dossier `android-exporter/` dans Android Studio.
 
+N'ouvre pas la racine `PersonnalTrainer/` dans Android Studio. Cette racine est un workspace complet Node.js + Android ; Android Studio doit ouvrir le sous-dossier Gradle `android-exporter/`.
+
 Puis :
 
 1. Laisse Android Studio synchroniser Gradle.
@@ -48,6 +50,8 @@ Puis :
 3. Lance la configuration `app`.
 
 Si Android Studio demande d'installer un SDK Android ou Gradle, accepte.
+
+Si la synchronisation echoue sur `dl.google.com` ou `repo.maven.apache.org`, verifie ta connexion, ton proxy ou les reglages reseau Android Studio. Le projet a un Gradle wrapper, donc Android Studio doit utiliser `./gradlew`.
 
 ## Configuration dans l'app
 
