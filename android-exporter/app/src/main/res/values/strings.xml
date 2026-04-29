@@ -1,5 +1,5 @@
 <resources>
     <string name="app_name">Personal Trainer Exporter</string>
     <string name="health_permissions_rationale_title">Acces Health Connect</string>
-    <string name="health_permissions_rationale_body">L'application lit les donnees Health Connect autorisees pour envoyer un resume quotidien vers ton backend Personal Trainer.</string>
+    <string name="health_permissions_rationale_body">L\'application lit les donnees Health Connect autorisees pour envoyer un resume quotidien vers ton backend Personal Trainer.</string>
 </resources>
