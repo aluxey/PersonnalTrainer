@@ -7,7 +7,14 @@ data class AppConfig(
     val apiKey: String
 ) {
     val isComplete: Boolean
-        get() = backendUrl.startsWith("http") && apiKey.length >= 16
+        get() = backendUrl.trim().startsWith("http") && apiKey.trim().length >= 16
+
+    fun normalized(): AppConfig {
+        return AppConfig(
+            backendUrl = backendUrl.trim().trimEnd('/'),
+            apiKey = apiKey.trim()
+        )
+    }
 }
 
 class ConfigStore(context: Context) {
@@ -21,9 +28,10 @@ class ConfigStore(context: Context) {
     }
 
     fun save(config: AppConfig) {
+        val normalized = config.normalized()
         preferences.edit()
-            .putString(KEY_BACKEND_URL, config.backendUrl.trim().trimEnd('/'))
-            .putString(KEY_API_KEY, config.apiKey.trim())
+            .putString(KEY_BACKEND_URL, normalized.backendUrl)
+            .putString(KEY_API_KEY, normalized.apiKey)
             .apply()
     }
 

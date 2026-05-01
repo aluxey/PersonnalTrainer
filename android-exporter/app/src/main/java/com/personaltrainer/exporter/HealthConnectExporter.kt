@@ -147,7 +147,7 @@ class SyncUseCase(context: Context) {
     private val configStore = ConfigStore(appContext)
     private val backendClient = BackendClient()
 
-    suspend fun syncYesterday(): String {
+    suspend fun syncYesterday(): SyncResult {
         val status = HealthConnectClient.getSdkStatus(appContext)
         if (status != HealthConnectClient.SDK_AVAILABLE) {
             error("Health Connect indisponible sur cet appareil. Status=$status")
@@ -164,6 +164,17 @@ class SyncUseCase(context: Context) {
             error("Aucune donnee Health Connect trouvee pour hier.")
         }
 
-        return backendClient.send(configStore.read(), payload)
+        val response = backendClient.send(configStore.read(), payload)
+        return SyncResult(
+            date = payload.date,
+            metricCount = payload.metrics.size,
+            response = response
+        )
     }
 }
+
+data class SyncResult(
+    val date: String,
+    val metricCount: Int,
+    val response: String
+)

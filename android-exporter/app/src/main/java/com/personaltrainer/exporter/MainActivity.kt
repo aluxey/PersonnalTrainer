@@ -7,20 +7,25 @@ import androidx.activity.compose.setContent
 import androidx.health.connect.client.HealthConnectClient
 import androidx.health.connect.client.PermissionController
 import androidx.health.connect.client.permission.HealthPermission.Companion.PERMISSION_READ_HEALTH_DATA_IN_BACKGROUND
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
@@ -34,6 +39,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
@@ -111,11 +117,25 @@ data class HealthState(
     val message: String
 )
 
+private data class OperationNotice(
+    val title: String,
+    val detail: String,
+    val tone: NoticeTone = NoticeTone.Info,
+    val inProgress: Boolean = false
+)
+
+private enum class NoticeTone {
+    Info,
+    Success,
+    Warning,
+    Error
+}
+
 @Composable
 private fun ExporterApp(
     initialConfig: AppConfig,
     onSaveConfig: (AppConfig) -> Unit,
-    onSyncNow: suspend () -> String,
+    onSyncNow: suspend () -> SyncResult,
     onScheduleDaily: () -> Unit,
     onCancelSchedule: () -> Unit,
     getHealthState: suspend () -> HealthState
@@ -124,7 +144,17 @@ private fun ExporterApp(
     val coroutineScope = rememberCoroutineScope()
     var backendUrl by remember { mutableStateOf(initialConfig.backendUrl) }
     var apiKey by remember { mutableStateOf(initialConfig.apiKey) }
-    var status by remember { mutableStateOf("Initialisation...") }
+    var notice by remember {
+        mutableStateOf(
+            OperationNotice(
+                title = "Initialisation",
+                detail = "Verification de Health Connect...",
+                inProgress = true
+            )
+        )
+    }
+    var syncInProgress by remember { mutableStateOf(false) }
+    var permissionInProgress by remember { mutableStateOf(false) }
     var healthState by remember {
         mutableStateOf(
             HealthState(
@@ -137,22 +167,49 @@ private fun ExporterApp(
         )
     }
 
+    fun showNotice(title: String, detail: String, tone: NoticeTone = NoticeTone.Info, inProgress: Boolean = false) {
+        notice = OperationNotice(
+            title = title,
+            detail = detail,
+            tone = tone,
+            inProgress = inProgress
+        )
+    }
+
     val permissionLauncher = rememberLauncherForActivityResult(
         PermissionController.createRequestPermissionResultContract()
-    ) {
+    ) { grantedPermissions ->
         coroutineScope.launch {
+            permissionInProgress = false
             healthState = getHealthState()
-            status = if (healthState.basePermissionsGranted) {
-                "Permissions Health Connect accordees."
+            if (healthState.basePermissionsGranted) {
+                if (healthState.backgroundAvailable && !healthState.backgroundPermissionGranted) {
+                    showNotice(
+                        "Permissions principales accordees",
+                        "Relance Autoriser pour activer l'arriere-plan si tu veux la sync automatique.",
+                        NoticeTone.Warning
+                    )
+                } else {
+                    showNotice(
+                        "Autorisation accordee",
+                        "Toutes les permissions necessaires a l'envoi manuel sont accordees.",
+                        NoticeTone.Success
+                    )
+                }
             } else {
-                "Certaines permissions Health Connect manquent encore."
+                val missingCount = ExporterPermissions.basePermissions.count { it !in grantedPermissions }
+                showNotice(
+                    "Autorisations incompletes",
+                    "$missingCount permission(s) Health Connect restent manquantes.",
+                    NoticeTone.Warning
+                )
             }
         }
     }
 
     LaunchedEffect(Unit) {
         healthState = getHealthState()
-        status = healthState.message
+        showNotice("Health Connect", healthState.message, if (healthState.available) NoticeTone.Success else NoticeTone.Warning)
     }
 
     Column(
@@ -195,8 +252,15 @@ private fun ExporterApp(
                 )
                 Button(
                     onClick = {
-                        onSaveConfig(AppConfig(backendUrl, apiKey))
-                        status = "Configuration sauvegardee."
+                        val config = AppConfig(backendUrl, apiKey).normalized()
+                        onSaveConfig(config)
+                        backendUrl = config.backendUrl
+                        apiKey = config.apiKey
+                        showNotice(
+                            "URL mise a jour",
+                            "Backend sauvegarde: ${config.backendUrl.ifBlank { "URL vide" }}",
+                            if (config.isComplete) NoticeTone.Success else NoticeTone.Warning
+                        )
                     },
                     modifier = Modifier.fillMaxWidth()
                 ) {
@@ -217,8 +281,13 @@ private fun ExporterApp(
                     OutlinedButton(
                         onClick = {
                             coroutineScope.launch {
+                                showNotice("Verification", "Lecture des autorisations Health Connect...", inProgress = true)
                                 healthState = getHealthState()
-                                status = healthState.message
+                                showNotice(
+                                    "Etat Health Connect",
+                                    healthState.message,
+                                    if (healthState.available) NoticeTone.Success else NoticeTone.Warning
+                                )
                             }
                         },
                         modifier = Modifier.weight(1f)
@@ -228,18 +297,63 @@ private fun ExporterApp(
                     Button(
                         onClick = {
                             coroutineScope.launch {
-                                val statusNow = getHealthState()
-                                if (!statusNow.available) {
-                                    status = statusNow.message
+                                permissionInProgress = true
+                                showNotice(
+                                    "Autorisation",
+                                    "Preparation de la demande Health Connect...",
+                                    inProgress = true
+                                )
+                                healthState = getHealthState()
+                                if (!healthState.available) {
+                                    permissionInProgress = false
+                                    showNotice("Health Connect indisponible", healthState.message, NoticeTone.Warning)
                                     return@launch
                                 }
+
                                 val client = HealthConnectClient.getOrCreate(context)
-                                permissionLauncher.launch(ExporterPermissions.requestedPermissions(client))
+                                val granted = client.permissionController.getGrantedPermissions()
+                                val missingBase = ExporterPermissions.basePermissions - granted
+                                val missingBackground =
+                                    healthState.backgroundAvailable &&
+                                        PERMISSION_READ_HEALTH_DATA_IN_BACKGROUND !in granted
+                                val requestedPermissions = when {
+                                    missingBase.isNotEmpty() -> missingBase
+                                    missingBackground -> setOf(PERMISSION_READ_HEALTH_DATA_IN_BACKGROUND)
+                                    else -> emptySet()
+                                }
+
+                                if (requestedPermissions.isEmpty()) {
+                                    permissionInProgress = false
+                                    showNotice(
+                                        "Autorisations deja accordees",
+                                        "Les permissions Health Connect necessaires sont deja actives.",
+                                        NoticeTone.Success
+                                    )
+                                    return@launch
+                                }
+
+                                showNotice(
+                                    "Ouverture Health Connect",
+                                    "Valide les permissions demandees, puis reviens dans l'app.",
+                                    inProgress = true
+                                )
+
+                                try {
+                                    permissionLauncher.launch(requestedPermissions)
+                                } catch (error: Throwable) {
+                                    permissionInProgress = false
+                                    showNotice(
+                                        "Autorisation impossible",
+                                        error.message ?: "Health Connect n'a pas pu ouvrir l'ecran de permissions.",
+                                        NoticeTone.Error
+                                    )
+                                }
                             }
                         },
+                        enabled = !permissionInProgress,
                         modifier = Modifier.weight(1f)
                     ) {
-                        Text("Autoriser")
+                        Text(if (permissionInProgress) "Ouverture..." else "Autoriser")
                     }
                 }
             }
@@ -250,35 +364,98 @@ private fun ExporterApp(
                 Text("Synchronisation", fontWeight = FontWeight.Bold)
                 Button(
                     onClick = {
-                        onSaveConfig(AppConfig(backendUrl, apiKey))
+                        val config = AppConfig(backendUrl, apiKey).normalized()
+                        onSaveConfig(config)
+                        backendUrl = config.backendUrl
+                        apiKey = config.apiKey
                         coroutineScope.launch {
-                            status = "Synchronisation en cours..."
-                            status = try {
-                                onSyncNow()
-                                "Synchronisation envoyee avec succes."
+                            if (!config.isComplete) {
+                                showNotice(
+                                    "Configuration incomplete",
+                                    "Verifie l'URL du backend et la cle API avant l'envoi.",
+                                    NoticeTone.Warning
+                                )
+                                return@launch
+                            }
+
+                            syncInProgress = true
+                            showNotice(
+                                "Controle avant envoi",
+                                "Verification des permissions et preparation des donnees Health Connect...",
+                                inProgress = true
+                            )
+                            healthState = getHealthState()
+                            if (!healthState.available || !healthState.basePermissionsGranted) {
+                                syncInProgress = false
+                                showNotice(
+                                    "Envoi bloque",
+                                    if (!healthState.available) healthState.message else "Accorde les permissions Health Connect avant de synchroniser.",
+                                    NoticeTone.Warning
+                                )
+                                return@launch
+                            }
+
+                            try {
+                                val result = onSyncNow()
+                                showNotice(
+                                    "Donnees envoyees",
+                                    "${result.metricCount} metrique(s) envoyee(s) pour ${result.date}.",
+                                    NoticeTone.Success
+                                )
                             } catch (error: Throwable) {
-                                "Erreur sync: ${error.message}"
+                                showNotice(
+                                    "Erreur d'envoi",
+                                    error.message ?: "La synchronisation a echoue.",
+                                    NoticeTone.Error
+                                )
+                            } finally {
+                                syncInProgress = false
                             }
                         }
                     },
-                    enabled = backendUrl.isNotBlank() && apiKey.isNotBlank(),
+                    enabled = backendUrl.isNotBlank() && apiKey.isNotBlank() && !syncInProgress,
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    Text("Synchroniser hier maintenant")
+                    Text(if (syncInProgress) "Envoi en cours..." else "Synchroniser hier maintenant")
                 }
 
                 Button(
                     onClick = {
-                        onSaveConfig(AppConfig(backendUrl, apiKey))
+                        val config = AppConfig(backendUrl, apiKey).normalized()
+                        onSaveConfig(config)
+                        backendUrl = config.backendUrl
+                        apiKey = config.apiKey
                         coroutineScope.launch {
+                            if (!config.isComplete) {
+                                showNotice(
+                                    "Configuration incomplete",
+                                    "Verifie l'URL du backend et la cle API avant de planifier l'envoi.",
+                                    NoticeTone.Warning
+                                )
+                                return@launch
+                            }
+
+                            showNotice("Planification", "Verification de la permission arriere-plan...", inProgress = true)
                             healthState = getHealthState()
                             if (!healthState.backgroundAvailable) {
-                                status = "Lecture en arriere-plan indisponible sur cette version de Health Connect. Utilise la sync manuelle."
+                                showNotice(
+                                    "Arriere-plan indisponible",
+                                    "Cette version de Health Connect ne permet pas la lecture en arriere-plan. Utilise la sync manuelle.",
+                                    NoticeTone.Warning
+                                )
                             } else if (!healthState.backgroundPermissionGranted) {
-                                status = "Accorde d'abord la permission de lecture en arriere-plan."
+                                showNotice(
+                                    "Permission arriere-plan manquante",
+                                    "Appuie sur Autoriser pour demander la lecture en arriere-plan.",
+                                    NoticeTone.Warning
+                                )
                             } else {
                                 onScheduleDaily()
-                                status = "Sync quotidienne planifiee autour de 08:20."
+                                showNotice(
+                                    "Sync planifiee",
+                                    "Synchronisation quotidienne active autour de 08:20.",
+                                    NoticeTone.Success
+                                )
                             }
                         }
                     },
@@ -290,7 +467,7 @@ private fun ExporterApp(
                 OutlinedButton(
                     onClick = {
                         onCancelSchedule()
-                        status = "Planification annulee."
+                        showNotice("Planification annulee", "La synchronisation automatique est desactivee.", NoticeTone.Info)
                     },
                     modifier = Modifier.fillMaxWidth()
                 ) {
@@ -299,11 +476,56 @@ private fun ExporterApp(
             }
         }
 
-        Card(colors = CardDefaults.cardColors(containerColor = Color(0xFFEFF6FF))) {
-            Column(modifier = Modifier.padding(16.dp)) {
-                Text("Statut", fontWeight = FontWeight.Bold)
-                Spacer(modifier = Modifier.height(8.dp))
-                Text(status)
+        OperationNoticeCard(notice)
+    }
+}
+
+@Composable
+private fun OperationNoticeCard(notice: OperationNotice) {
+    val accent = when (notice.tone) {
+        NoticeTone.Info -> Color(0xFF167982)
+        NoticeTone.Success -> Color(0xFF2E7D4F)
+        NoticeTone.Warning -> Color(0xFFB45309)
+        NoticeTone.Error -> Color(0xFFB42318)
+    }
+    val background = when (notice.tone) {
+        NoticeTone.Info -> Color(0xFFE7F7F8)
+        NoticeTone.Success -> Color(0xFFEAF7EF)
+        NoticeTone.Warning -> Color(0xFFFFF7E8)
+        NoticeTone.Error -> Color(0xFFFFECEA)
+    }
+    val label = when (notice.tone) {
+        NoticeTone.Info -> "Info"
+        NoticeTone.Success -> "OK"
+        NoticeTone.Warning -> "A verifier"
+        NoticeTone.Error -> "Erreur"
+    }
+
+    Card(colors = CardDefaults.cardColors(containerColor = background)) {
+        Row(modifier = Modifier.fillMaxWidth()) {
+            Box(
+                modifier = Modifier
+                    .width(5.dp)
+                    .height(112.dp)
+                    .background(accent)
+            )
+            Column(
+                modifier = Modifier.padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Box(
+                        modifier = Modifier
+                            .size(10.dp)
+                            .background(accent, CircleShape)
+                    )
+                    Text(label, color = accent, fontWeight = FontWeight.Bold)
+                }
+                Text(notice.title, fontWeight = FontWeight.Bold)
+                Text(notice.detail, color = Color(0xFF39465A))
+                if (notice.inProgress) {
+                    LinearProgressIndicator(modifier = Modifier.fillMaxWidth(), color = accent)
+                }
             }
         }
     }
